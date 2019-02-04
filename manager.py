@@ -9,15 +9,21 @@ def show_schedules():
 	print(user_data.get("name"))
 	print(' - schedules:')
 	for time_event in user_data.get("schedules"):
-	    if None not in time_event:
-		years = time_event[1][0] - time_event[0][0]
-		months = time_event[1][1] - time_event[0][1]
-		days = time_event[1][2] - time_event[0][2]
-		hours = time_event[1][3] - time_event[0][3]
-		minutes = time_event[1][4] - time_event[0][4]
-		print(str(hours) + 'hours and ' + str(minutes) + 'minutes')
+	    if time_event.get('end'):
+		years = time_event['end'][0] - time_event['start'][0]
+		months = time_event['end'][1] - time_event['start'][1]
+		days = time_event['end'][2] - time_event['start'][2]
+		hours = time_event['end'][3] - time_event['start'][3]
+		minutes = time_event['end'][4] - time_event['start'][4]
+		print(str(hours) + ' hours and ' + str(minutes) + ' minutes')
+		if years > 0:
+		    print('   + WARNING this work shift has taken ' + str(years) + ' years')
+		elif months > 0:
+		    print('   + WARNING this work shift has taken ' + str(months) + ' months')
+		if days > 0:
+		    print('   + WARNING this work shift has taken ' + str(days) + ' days')
 	    else:
-		print('Not finished, WORK!!!')
+		print('Not finished ... WORK !!!')
 	print('\n ------------- \n')
 
 def write_users_file(log_data):
@@ -59,21 +65,14 @@ def add_schedule(credentials):
 	now = datetime.datetime.now()
 	date_time = (now.year, now.month, now.day, now.hour, now.minute)
 	schedules = user.get("schedules")
-	if len(schedules) is not 0:
-	    x, y = schedules[-1]
-	    if not y:
-	        y = date_time
-	        schedules[-1] = (x, y)
-	    else:
-	        schedules.append((date_time, None))
-        else:
-	    schedules.append((date_time, None))
+	if len(schedules) is 0 or schedules[-1].get('end'):
+	    schedules.append({'start': date_time, 'end': None})
+	    print('work shift started ...')
+	else:
+	    schedules[-1]['end'] = date_time
+	    print('work shift done :)')
 
         users[credentials]["schedules"] = schedules
         write_users_file(users)
     else:
 	print("User does not exist")
-
-
-if __name__ == '__main__':
-    start_loop(add_schedule, 0)
